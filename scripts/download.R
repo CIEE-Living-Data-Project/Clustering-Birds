@@ -14,3 +14,5 @@ groundhog::groundhog.library(
 
 rdryad::dryad_download("10.5061/dryad.1rn8pk0tb")
 system("cp -r /home/fieldima/.cache/R/rdryad/10_5061_dryad_1rn8pk0tb/ data/")
+
+# Change the file paths to wherever the system downloads them to
