@@ -1,0 +1,83 @@
+---
+title: "Data Exploration"
+author: "Jose Rafael Dimayacyac"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+groundhog::groundhog.library("tidyverse", date = "2022-09-01", tolerate.R.version = "4.1.2")
+knitr::opts_knit$set(root.dir = here::here())
+```
+
+## Introduction
+
+In this document I will be exploring the predicted and actual mass data for the 9185 bird species used in the later analysis. Specifically, I want to understand the dimensions of the data, determine which data points will be useful for later analyses, as well as confirm the conclusions from the paper from which the data is taken from.
+
+## Loading
+
+First, I will load the data and get an idea of what it looks like.
+
+```{r load}
+mass_predictions <- readxl::read_xlsx("data/mass_predictions.xlsx")
+summary(mass_predictions)
+```
+It seems like there is a big range of possible values for predicted mass, and that actual mass was loaded as a character vector instead of a numeric.
+
+## Data Cleaning
+
+Now I will clean up the data; i.e., coerce the values of actual mass into type numeric and rename the variables for easier manipulation.
+
+```{r clean}
+data <- mass_predictions %>% 
+  rename(mass = `actual mass (g)`, predicted = `predicted mass (g)`) %>%
+  mutate(mass = as.numeric(mass), predicted = as.numeric(predicted))
+
+glimpse(data)
+```
+
+As shown by the output of the glimpse function, the types have now been corrected for. However, it should be noted that there are a lot of missing values for actual mass; which is probably why mass needed to be predicted. If I am going to use predicted mass I should first get an idea of how well it works as an estimator of the true values.
+
+## Correlation Testing
+
+Here I fit the variables of interest to a linear model and then plot it to visualize the relationship.
+
+```{r corr}
+fit <- data %>% lm(predicted ~ mass, data = .)
+
+data %>%
+  ggplot(aes(x = mass, y = predicted)) + geom_point() + geom_smooth(method = "lm", na.rm = TRUE, se = TRUE) + theme_bw() +
+  ylab("Predicted Mass (g)") + xlab("Actual Mass (g)") + ggtitle("Plotting relationship between Predicted and Actual Mass") +
+  annotate(geom = "text", label = paste0("The slope is ", round(fit$coefficients['mass'], digits = 3)), x = 60000, y = 20000) + 
+  annotate(geom = "text", label = paste0("The R squared is ", round(summary(fit)$r.squared, digits = 3)), x = 60000, y = 15000)
+
+```
+
+As shown by the plot above, the relationship is not perfect, but the slope does explain 86.7% of the variance, so predicted mass is a good enough estimator.
+
+## Variables of interest
+
+Outside of the predicted mass of the birds, the authors were interested in another variable; the ability of the birds to fly. The original paper concluded that extinct birds tended to be larger, and that flightless birds also tended to be larger. I also wished to understand how much birds varied in mass between families. Here I analyze how birds vary in mass by the variables of extinction status, flightlessness, and phylogenetic taxa. 
+
+```{r plots}
+data %>%
+  ggplot(aes(x = log(predicted), y = Extinct, fill = Extinct)) + geom_boxplot() + theme_bw() + ggtitle("Extinct Birds Tend to be Larger in Mass")
+
+data %>%
+  ggplot(aes(x = log(predicted), y = Flightless, fill = Flightless)) + geom_boxplot() + theme_bw() + ggtitle("Flightless Birds Tend to be Larger in Mass")
+
+data %>%
+  ggplot(aes(x = log(predicted), y = Family)) + geom_boxplot() + theme_bw() + ggtitle("Avian Families Widely Vary in Predicted Mass")
+```
+
+## Data cleaning
+
+Above, I have shown that predicted mass is an acceptable estimator of actual mass, and that the variables of interest are flightlessness, extinction status, family, and predicted mass. Here I will clean the data and save the filtered data as a comma-spaced-variables file. 
+
+```{r clean}
+data_filtered <- data %>%
+  select(`Scientific name`, Family, Flightless, Extinct, predicted)
+
+write_csv(data_filtered, file = "data/data_clean.csv")
+```
