@@ -3,7 +3,6 @@
 #Load the packages
 groundhog::groundhog.library(
   "
-  library('rdryad')
   library('tidyverse')
   library('here')
   "
@@ -15,8 +14,7 @@ if (!dir.exists("data")) dir.create("data")
 
 # Now to download from Dryad from the following doi: https://doi.org/10.5061/dryad.1rn8pk0tb
 
-rdryad::dryad_download("10.5061/dryad.1rn8pk0tb")
+#Downloaded on Sep 20th, 2022
+download.file("https://datadryad.org/stash/downloads/file_stream/687183.xlsx", destfile = "data/mass_predictions.xlsx")
 
-# This calls bash on the terminal to move the data into the correct directory. In windows, might have to be done manually.
-# Change the file paths below to wherever the system downloads them to
-system("cp -r /home/fieldima/.cache/R/rdryad/10_5061_dryad_1rn8pk0tb/ data/")
+#The file above is an excel sheet with the body mass predictions for each bird in the study

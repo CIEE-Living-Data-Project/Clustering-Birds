@@ -6,28 +6,28 @@ In this repository I will be employing k-means clustering to group bird species 
 ## Directory Structure
 
 ├── Clustering-Birds.Rproj
-├── Preregistration.Rmd
-├── Preregistration.pdf
-├── README.md
 ├── data
+│   ├── mass_predictions.xlsx
 │   └── _README.md
 ├── manuscript
-│   ├── OUP_First_SBk_Bot_8401-eps-converted-to.pdf
-│   ├── OUP_First_SBk_Bot_8401.eps
-│   ├── _README.md
 │   ├── bibliography.bib
 │   ├── bioinfo.cls
-│   ├── manuscript.Rmd
-│   ├── manuscript.log
-│   ├── manuscript.pdf
-│   ├── manuscript.tex
 │   ├── manuscript_files
 │   │   └── figure-latex
 │   │       └── figure-1.pdf
-│   └── natbib.bst
+│   ├── manuscript.log
+│   ├── manuscript.pdf
+│   ├── manuscript.Rmd
+│   ├── manuscript.tex
+│   ├── natbib.bst
+│   ├── OUP_First_SBk_Bot_8401.eps
+│   ├── OUP_First_SBk_Bot_8401-eps-converted-to.pdf
+│   └── _README.md
 ├── outputs
 │   └── _README.md
+├── Preregistration.pdf
+├── Preregistration.Rmd
+├── README.md
 └── scripts
-    ├── _README.md
-    └── download.R
-
+    ├── download.R
+    └── _README.md
