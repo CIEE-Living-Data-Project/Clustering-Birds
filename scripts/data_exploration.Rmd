@@ -7,7 +7,7 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-groundhog::groundhog.library("tidyverse", date = "2022-09-01", tolerate.R.version = "4.1.2")
+groundhog::groundhog.library("tidyverse", date = "2022-04-21")
 knitr::opts_knit$set(root.dir = here::here())
 ```
 
@@ -31,9 +31,9 @@ Now I will clean up the data; i.e., coerce character values to numerical whereve
 
 ```{r clean}
 data <- measurements %>% 
-  distinct() %>%
   rename(Mass = `Weight (gram)`) %>%
-  select(!c(`Source (Weight)`, `Source (Measurements, extant birds only)`)) %>%
+  select(!c(`Source (Weight)`)) %>%
+  distinct() %>%
   pivot_longer(cols = c(Mass:Carpometacarpus)) %>%
   mutate(value = as.numeric(value)) %>%
   pivot_wider(names_from = name, values_from = value) #Not working quite right yet
@@ -41,47 +41,53 @@ data <- measurements %>%
 glimpse(data)
 ```
 
-As shown by the output of the glimpse function, the types have now been corrected for. However, it should be noted that there are a lot of missing values for actual mass; which is probably why mass needed to be predicted. If I am going to use predicted mass I should first get an idea of how well it works as an estimator of the true values.
+As shown by the output of the glimpse function, the types have now been corrected for. However, it should be noted that there are a lot of missing values for actual mass; which is probably why mass needed to be predicted. Now I want to pick a set of variables to use to cluster the data.
 
-## Correlation Testing
+## Variable Selection
 
-Here I fit the variables of interest to a linear model and then plot it to visualize the relationship.
+Here I select which variables I will use to plot the data
 
-```{r corr}
-fit <- data %>% lm(predicted ~ mass, data = .)
+```{r select}
+data %>%
+  filter(Extinct == "yes") %>%
+  select(`Scientific name`, Mass:Carpometacarpus) %>% 
+  pivot_longer(cols = !c(`Scientific name`)) %>%
+  group_by(name) %>%
+  summarise(NotAvailable = sum(is.na(value)), Available = sum(!is.na(value))) 
 
 data %>%
-  ggplot(aes(x = mass, y = predicted)) + geom_point() + geom_smooth(method = "lm", na.rm = TRUE, se = TRUE) + theme_bw() +
-  ylab("Predicted Mass (g)") + xlab("Actual Mass (g)") + ggtitle("Plotting relationship between Predicted and Actual Mass") +
-  annotate(geom = "text", label = paste0("The slope is ", round(fit$coefficients['mass'], digits = 3)), x = 60000, y = 20000) + 
-  annotate(geom = "text", label = paste0("The R squared is ", round(summary(fit)$r.squared, digits = 3)), x = 60000, y = 15000)
-
+  filter(Extinct == "no") %>%
+  select(`Scientific name`, Mass:Carpometacarpus) %>% 
+  pivot_longer(cols = !c(`Scientific name`)) %>%
+  group_by(name) %>%
+  summarise(NotAvailable = sum(is.na(value)), Available = sum(!is.na(value)))
 ```
 
-As shown by the plot above, the relationship is not perfect, but the slope does explain 86.7% of the variance, so predicted mass is a good enough estimator.
+As shown by the table above, most species have a Mass value, but extinct species do not. This means I cannot use the Mass value for clustering. However, many species do have Tarsometatarsus and Body Length measurements. I will filter for data points that have values for both of these.  
 
-## Variables of interest
+## Filtering
 
 Outside of the predicted mass of the birds, the authors were interested in another variable; the ability of the birds to fly. The original paper concluded that extinct birds tended to be larger, and that flightless birds also tended to be larger. I also wished to understand how much birds varied in mass between families. Here I analyze how birds vary in mass by the variables of extinction status, flightlessness, and phylogenetic taxa. 
 
-```{r plots}
+```{r filter}
 data %>%
-  ggplot(aes(x = log(predicted), y = Extinct, fill = Extinct)) + geom_boxplot() + theme_bw() + ggtitle("Extinct Birds Tend to be Larger in Mass")
+  select(`Scientific name`, Family, Flightless, Extinct, Body_Length, Tarsometatarsus) %>%
+  filter(!is.na(Body_Length), !is.na(Tarsometatarsus))
 
 data %>%
-  ggplot(aes(x = log(predicted), y = Flightless, fill = Flightless)) + geom_boxplot() + theme_bw() + ggtitle("Flightless Birds Tend to be Larger in Mass")
+  select(`Scientific name`, Family, Flightless, Extinct, Body_Length, Humerus) %>%
+  filter(!is.na(Body_Length), !is.na(Humerus))
 
-data %>%
-  ggplot(aes(x = log(predicted), y = Family)) + geom_boxplot() + theme_bw() + ggtitle("Avian Families Widely Vary in Predicted Mass")
+data_filtered <- data %>%
+  select(`Scientific name`, Family, Flightless, Extinct, Humerus, Tarsometatarsus) %>%
+  filter(!is.na(Humerus), !is.na(Tarsometatarsus))
 ```
+
+As shown by the above tibbles, species with body length measurements do not overlap with species with Tarsometatarsus measurements. This is the same for body length and humerus measurements. Therefore, I will chose to use the measurements of Humerus and Tarsometatarsus. Additionally, I am interested in Extinction status, flightlessness, and family.
 
 ## Data cleaning
 
-Above, I have shown that predicted mass is an acceptable estimator of actual mass, and that the variables of interest are flightlessness, extinction status, family, and predicted mass. Here I will clean the data and save the filtered data as a comma-spaced-variables file. 
-
+Finally, I produce a cleaned and filtered file to perform clustering on.
 ```{r clean}
-data_filtered <- data %>%
-  select(`Scientific name`, Family, Flightless, Extinct, predicted)
-
 write_csv(data_filtered, file = "data/data_clean.csv")
 ```
