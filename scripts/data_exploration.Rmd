@@ -13,26 +13,30 @@ knitr::opts_knit$set(root.dir = here::here())
 
 ## Introduction
 
-In this document I will be exploring the predicted and actual mass data for the 9185 bird species used in the later analysis. Specifically, I want to understand the dimensions of the data, determine which data points will be useful for later analyses, as well as confirm the conclusions from the paper from which the data is taken from.
+In this document I will be exploring the measurement data for the 6961 bird species used in the later analysis. Specifically, I want to understand the dimensions of the data, determine which data points will be useful for later analyses, as well as confirm the conclusions from the paper from which the data is taken from.
 
 ## Loading
 
 First, I will load the data and get an idea of what it looks like.
 
 ```{r load}
-mass_predictions <- readxl::read_xlsx("data/mass_predictions.xlsx")
-summary(mass_predictions)
+measurements <- readxl::read_xlsx("data/mass_predictions.xlsx")
+glimpse(measurements)
 ```
-It seems like there is a big range of possible values for predicted mass, and that actual mass was loaded as a character vector instead of a numeric.
+The authors used multiple measurements to try to infer body mass, but it seems like they were mainly loaded in as characters instead of numerics, and that most values were not able to be measured. Now I need to decide which variables I will use for the clustering. 
 
 ## Data Cleaning
 
-Now I will clean up the data; i.e., coerce the values of actual mass into type numeric and rename the variables for easier manipulation.
+Now I will clean up the data; i.e., coerce character values to numerical wherever appropriate, and identify which variables I will ultimately need. 
 
 ```{r clean}
-data <- mass_predictions %>% 
-  rename(mass = `actual mass (g)`, predicted = `predicted mass (g)`) %>%
-  mutate(mass = as.numeric(mass), predicted = as.numeric(predicted))
+data <- measurements %>% 
+  distinct() %>%
+  rename(Mass = `Weight (gram)`) %>%
+  select(!c(`Source (Weight)`, `Source (Measurements, extant birds only)`)) %>%
+  pivot_longer(cols = c(Mass:Carpometacarpus)) %>%
+  mutate(value = as.numeric(value)) %>%
+  pivot_wider(names_from = name, values_from = value) #Not working quite right yet
 
 glimpse(data)
 ```
