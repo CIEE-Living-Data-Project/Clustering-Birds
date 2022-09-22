@@ -71,19 +71,19 @@ Outside of the predicted mass of the birds, the authors were interested in anoth
 
 ```{r filter}
 data %>%
-  select(`Scientific name`, Family, Flightless, Extinct, Body_Length, Tarsometatarsus) %>%
+  select(`Scientific name`, Order, Flightless, Extinct, Body_Length, Tarsometatarsus) %>%
   filter(!is.na(Body_Length), !is.na(Tarsometatarsus))
 
 data %>%
-  select(`Scientific name`, Family, Flightless, Extinct, Body_Length, Humerus) %>%
+  select(`Scientific name`, Order, Flightless, Extinct, Body_Length, Humerus) %>%
   filter(!is.na(Body_Length), !is.na(Humerus))
 
 data_filtered <- data %>%
-  select(`Scientific name`, Family, Flightless, Extinct, Humerus, Tarsometatarsus) %>%
+  select(`Scientific name`, Order, Flightless, Extinct, Humerus, Tarsometatarsus) %>%
   filter(!is.na(Humerus), !is.na(Tarsometatarsus))
 ```
 
-As shown by the above tibbles, species with body length measurements do not overlap with species with Tarsometatarsus measurements. This is the same for body length and humerus measurements. Therefore, I will chose to use the measurements of Humerus and Tarsometatarsus. Additionally, I am interested in Extinction status, flightlessness, and family.
+As shown by the above tibbles, species with body length measurements do not overlap with species with Tarsometatarsus measurements. This is the same for body length and humerus measurements. Therefore, I will chose to use the measurements of Humerus and Tarsometatarsus. Additionally, I am interested in Extinction status, flightlessness, and Order.
 
 ## Data cleaning
 
