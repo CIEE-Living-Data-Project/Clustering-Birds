@@ -4,7 +4,7 @@ In this repository I will be employing k-means clustering to group bird species 
 ## Author: Fiel Dimayacyac
 
 ## Directory Structure
-
+```
 ├── Clustering-Birds.Rproj
 ├── data
 │   ├── data_clean.csv
@@ -38,7 +38,7 @@ In this repository I will be employing k-means clustering to group bird species 
     ├── data_exploration.Rmd
     ├── download.R
     └── _README.md
-    
+```    
 ## Usage
 First, run download.R to retrieve the data and download required libraries, and then data_exploration.Rmd to produce the cleaned data, and finally clustering_script.R to perform the analysis. Alternatively, you can simply look at the manuscript in the /manuscript directory. 
 
