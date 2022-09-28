@@ -25,262 +25,143 @@
 
 \subtitle{Genome analysis}
 
-\title[Bioinformatics Rmd Template]{Template for preparing a submission
-to Bioinformatics using RMarkdown}
+\title[Clustering Bird Species]{Clustering Size Measurements of Extinct
+and Extant Bird Species}
 
 \author[FirstAuthorLastName \textit{et~al}.]{
-Alice Anonymous\,\textsuperscript{1,2}, Bob
-Security\,\textsuperscript{1}
+Fiel Dimayacyac\,\textsuperscript{1}
 }
 
 \address{
-\textsuperscript{1}Some Institute of Technology, Department, Street,
-City, State, Zip\\
-\textsuperscript{2}Another University Department, Street, City, State,
-Zip\\
+\textsuperscript{1}University of British Columbia, Bioinformatics,
+Vancouver, British Columbia\\
 }
 
-\corresp{To whom correspondence should be addressed. E-mail:
-bob@email.com}
+\corresp{}
 
 \history{Received on XXX; revised on XXX; accepted on XXX}
 
 \editor{Associate Editor: XXX}
 
 \abstract{
-\textbf{Motivation:} This section should specifically state the
-scientific question within the context of the field of study.\\
-\textbf{Results:} This section should summarize the scientific advance
-or novel results of the study, and its impact on computational
-biology.\\
-\textbf{Availability:} This section should state software availability
-if the paper focuses mainly on software development or on the
-implementation of an algorithm. Examples are: `Freely available on the
-web at XXX.' Website implemented in Perl, MySQL and Apache, with all
-major browsers supported'; or `Source code and binaries freely available
-for download at URL, implemented in C++ and supported on linux and MS
-Windows'. The complete address (URL) should be given. If the manuscript
-describes new software tools or the implementation of novel algorithms
-the software must be freely available to non-commercial users. Authors
-must also ensure that the software is available for a full TWO YEARS
-following publication. The editors of Bioinformatics encourage authors
-to make their source code available and, if possible, to provide access
-through an open source license.\\
-\textbf{Contact:}bob@email.com\\
-\textbf{Supplementary information:} Supplementary data are available at
-Bioinformatics Online.}
+\textbf{Motivation:} Identify if extinct and extant birds cluster
+according to order, extinction status, or flightlessness using size
+measurements.\\
+\textbf{Results:} This analysis found that bird size data minimized
+total within sum of squares with a k means of seven, but that bird size
+measurements did not cluster according to extinction status or
+flightlessness. Some clustered according to taxonomic relationship.\\
+\textbf{Availability:} All scripts, data, and manuscript files are
+freely available on the web at the Open Science Foundation website.\\
+\textbf{Contact:}fieldimayacyac@gmail.com\\
+\textbf{Supplementary information:} Supplementary data are available on
+the Open Science Foundation website.}
 
 \maketitle
 
 \section{Introduction}
 
-Cite others using bracket notation \citep{pepe2003statistical}. Can also
-cite with \citet{zou2005regularization}.
+In this study I reanalyze the paper by \citet{fromm_big_2021} wherein
+the authors aggregated body size measurements, flightlessness, order,
+and habitat of 9000 bird species with a focus on identifying size trends
+between extant species and species driven to extinction by human
+intervention. \citet{fromm_big_2021} found a significant difference
+between extinct and extant birds in overall body size and other factors,
+concluding that species driven to extinction tended to be larger,
+flightless, and island-dwelling.
 
-Instructions for authors are available
-\href{http://www.oxfordjournals.org/our_journals/bioinformatics/for_authors/general.html}{online}.
+My aim is to see if those trends hold up in the body size data itself;
+i.e., can an unsupervised learning approach naively discover these same
+trends. Specifically, I use k-means clustering as implemented in the
+tidymodels R package \citep{kuhn_tidymodels_2020}.
 
-Introduce your topic. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum ad nauseum.
-Introduce your topic. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum.
+\section{Results}
 
-Introduce your topic. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum ad nauseum.
-Introduce your topic. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum.
+Before performing k-means clustering, I first cleaned the data, and then
+selected variables to use later. I found that much of the data was
+unavailable, so I chose two bone measurements with the most overlapping
+available data points that included both extinct and extant species.
+These bone measurements being for humerus and tarsometatarsus.
 
-\section{Approach}
-
-Here is how to include math equations in the document (bounded by
-\texttt{\$\$}):
-
-\[
-\begin{aligned}
-(x+y)^3&=(x+y)(x+y)^2\\
-       &=(x+y)(x^2+2xy+y^2) \label{eqn:example} \\
-       &=x^3+3x^2y+3xy^3+x^3. 
-\end{aligned}
-\]
-
-Describe the approach. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum ad nauseum.
-Introduce your topic. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum.
-
-Describe the approach. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum ad nauseum.
-Introduce your topic. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum.
-
-Describe the approach. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum ad nauseum.
-Introduce your topic. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum.
-
-Describe the approach. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum ad nauseum.
-Introduce your topic. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum.
+Following data filtering I then visualized the remaining data to see if
+there were any obvious trends across extinction status, flightlessness,
+or order. Axes were log-normalized for inter-specific comparisons. No
+evident trends were visible previous to clustering (Figure 1).
 
 \begin{figure}
-\centering
-\includegraphics{manuscript_files/figure-latex/figure-1.pdf}
-\caption{Figure from an Rmd chunk.}
+\includegraphics[width=1\linewidth]{../outputs/pre_cluster_plot} \caption{Distribution of size measurements for extinct and extant bird species with flightlessness, Order, and extinction status. Tarsometatarsus measurements are on the x-axis and Humerus measurements are on the y-axis}\label{fig:figure1}
+\end{figure}
+
+To identify the optimal number of k-means to describe the patterns in
+the data, I then performed k-means analysis, varying the k value from
+one to ten (Figure 2).
+
+\begin{figure}
+\includegraphics[width=1\linewidth]{../outputs/centered_clusters} \caption{Clustered size measurement data with varying values of k. Circles represent cluster centers}\label{fig:figure2}
+\end{figure}
+
+To quantify how optimal each k-means value was, I calculated the total
+within sum of squares for each value k for the model. The lowest value k
+that minimized the total within sum of squares was seven (Figure 3).
+
+\begin{figure}
+\includegraphics[width=1\linewidth]{../outputs/tot.withinss_minimization} \caption{Total within sum of squares for varying k values. The red line intersects at a k of seven}\label{fig:figure3}
+\end{figure}
+
+Finally, I plotted the clusters with a k of seven overlaid onto Figure 1
+to identify if there were any trends within the clusters. No noticeable
+trends were evident in the data (Figure 4).
+
+\begin{figure}
+\includegraphics[width=1\linewidth]{../outputs/final_clustered_plot} \caption{Distribution of bird measurements with clusters overlain as ellipses and numbers at cluster centers}\label{fig:figure4}
 \end{figure}
 
 \section{Methods}
 
-Detailed methods. Lorem ipsum ad nauseum. Introduce your topic. Lorem
-ipsum ad nauseum. Introduce your topic. Lorem ipsum ad nauseum.
-Introduce your topic. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum.
-
-Detailed methods. Lorem ipsum ad nauseum. Introduce your topic. Lorem
-ipsum ad nauseum. Introduce your topic. Lorem ipsum ad nauseum.
-Introduce your topic. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum.
-
-Detailed methods. Lorem ipsum ad nauseum. Introduce your topic. Lorem
-ipsum ad nauseum. Introduce your topic. Lorem ipsum ad nauseum.
-Introduce your topic. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum.
-
-\subsection{Sub-Method}
-
-Details for Method 1. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum ad nauseum.
-Introduce your topic. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum.
-
-Details for Method 1. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum ad nauseum.
-Introduce your topic. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum.
-
-Details for Method 1. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum ad nauseum.
-Introduce your topic. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum.
-
-Details for Method 1. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum ad nauseum.
-Introduce your topic. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum.
-
-\subsection{Method 2}
-
-Details for Method 2. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum ad nauseum.
-Introduce your topic. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum.
-
-Details for Method 2. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum ad nauseum.
-Introduce your topic. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum.
-
-Details for Method 2. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum ad nauseum.
-Introduce your topic. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum.
-
-Details for Method 2. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum ad nauseum.
-Introduce your topic. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum.
+Body size measurements data was downloaded from data dryad entry
+10.5061/dryad.1rn8pk0tb via R script. The groundhog package was used for
+package version management and library control. Exploratory data
+analysis was carried out using the tidyverse R package \citep{tidy}.
+Data was loaded into R using the readxl package, filtered for NA values
+using dplyr and coerced using base R \citep{read} \citep{dplyr}.
+Variables for k-means clustering were chosen based on availability of
+data; the two variables with the most overlapping available values were
+chosen for downstream analysis. K-means clustering was performed using
+the tidymodels R package \citep{kuhn_tidymodels_2020}. Model variables
+were tidied and gathered using the broom R package \citep{broom}. Data
+was plotted using ggplot2 \citep{ggplot}.
 
 \section{Discussion}
 
-Discussion of results. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum ad nauseum.
-Introduce your topic. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum.
-
-Discussion of results. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum ad nauseum.
-Introduce your topic. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum.
-
-Discussion of results. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum ad nauseum.
-Introduce your topic. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum.
-
-Discussion of results. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum ad nauseum.
-Introduce your topic. Lorem ipsum ad nauseum. Introduce your topic.
-Lorem ipsum ad nauseum.
+In the original paper the authors found that birds driven to extinction
+by humans were more likely to be larger, flightless, and live on islands
+\citep{fromm_big_2021}. In this analysis I aimed to recreate these
+findings with an unsupervised learning approach. However, I was unable
+to do so. One possible explanation is the data points I used. In my
+analysis I filtered much of the data and ended up only using two data
+points; Humerus and Tarsometatarsus measurements. Because these two data
+points are correlated, it is possible that other relationships in the
+data were not able to be elucidated from this specific combination.
+Additionally, the authors reached those conclusions by aggregating the
+size measurements into a single measurement of estimated body size
+\citep{fromm_big_2021}. They estimated bird body size by employing a
+linear regression model using data from all the measurements they
+gathered to allow for an even comparison between extinct and extant
+species \citep{fromm_big_2021}. This esimated body mass metric was then
+used in their statistical analysis to compare extinct and extant birds
+and how they came to their conclusions. My analysis did not use
+estimated body mass, so it is possible that this is the reason I was
+unable to come to the same conclusions. In the future, one could attempt
+to employ a different unsupervised approach such as a random forest
+model using the same estimated body mass measurements to see if that
+could recreate their results.
 
 \section{Conclusion}
 
-Anything else? Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum
-ad nauseum. Introduce your topic. Lorem ipsum ad nauseum. Introduce your
-topic. Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum ad
-nauseum.
-
-Anything else? Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum
-ad nauseum. Introduce your topic. Lorem ipsum ad nauseum. Introduce your
-topic. Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum ad
-nauseum.
-
-Anything else? Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum
-ad nauseum. Introduce your topic. Lorem ipsum ad nauseum. Introduce your
-topic. Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum ad
-nauseum.
-
-Anything else? Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum
-ad nauseum. Introduce your topic. Lorem ipsum ad nauseum. Introduce your
-topic. Lorem ipsum ad nauseum. Introduce your topic. Lorem ipsum ad
-nauseum.
-
-\section*{Acknowledgements}
-\addcontentsline{toc}{section}{Acknowledgements}
-
-These should be included at the end of the text and not in footnotes.
-Please ensure you acknowledge all sources of funding, see funding
-section below.
-
-Details of all funding sources for the work in question should be given
-in a separate section entitled `Funding'. This should appear before the
-`Acknowledgements' section.
-
-\section*{Funding}
-\addcontentsline{toc}{section}{Funding}
-
-The following rules should be followed:
-
-\begin{itemize}
-\tightlist
-\item
-  The sentence should begin: `This work was supported by \ldots{}' -
-\item
-  The full official funding agency name should be given, i.e.~`National
-  Institutes of Health', not `NIH' (full RIN-approved list of UK funding
-  agencies)
-\item
-  Grant numbers should be given in brackets as follows: `{[}grant number
-  xxxx{]}'
-\item
-  Multiple grant numbers should be separated by a comma as follows:
-  `{[}grant numbers xxxx, yyyy{]}'
-\item
-  Agencies should be separated by a semi-colon (plus `and' before the
-  last funding agency)
-\item
-  Where individuals need to be specified for certain sources of funding
-  the following text should be added after the relevant agency or grant
-  number `to {[}author initials{]}'.
-\end{itemize}
-
-An example is given here: `This work was supported by the National
-Institutes of Health {[}AA123456 to C.S., BB765432 to M.H.{]}; and the
-Alcohol \& Education Research Council {[}hfygr667789{]}.'
-
-Oxford Journals will deposit all NIH-funded articles in PubMed Central.
-See Depositing articles in repositories -- information for authors for
-details. Authors must ensure that manuscripts are clearly indicated as
-NIH-funded using the guidelines above.
+In this study I aimed to recreate the results of \citet{fromm_big_2021}
+using an unsupervised k-means clustering approach but was unable to come
+to the same conclusions. Future studies can employ alternative models
+using different parts of the data to improve upon my analysis.
 
 
 % Bibliography
